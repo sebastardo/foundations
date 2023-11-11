@@ -1,0 +1,40 @@
+version: "3.8"
+
+# servicios
+services:
+  postgres:                            
+    container_name: pg_container       
+    image: postgres:12.7               
+    restart: always                    
+    ports:                               
+      - "5432:5432"                       
+    environment:                          
+      - POSTGRES_USER=admin              
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=arboleda
+    volumes:
+      - ./sql/crear_arboleda.sql:/sql/crear_arboleda.sql
+      - ./bash/:/docker-entrypoint-initdb.d
+    networks:
+      - sebanet
+
+  cargar:
+      build: ./python-carga/
+      container_name: cargar
+      depends_on:
+        - postgres
+      networks:
+        - sebanet
+
+  consultar:
+      build: ./python-consulta/
+      container_name: consultar
+      depends_on:
+        - postgres
+        - cargar
+      networks:
+        - sebanet
+
+networks:
+    sebanet:
+        driver: bridge
